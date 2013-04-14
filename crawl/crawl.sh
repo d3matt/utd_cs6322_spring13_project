@@ -11,3 +11,8 @@ for repo in $REPOS ; do
         wget ${OPTIONS} $url
     done
 done
+
+for bad in $(cat BAD) ; do
+	rm -vf $bad
+done
+./genFiles.sh
