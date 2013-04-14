@@ -1,4 +1,4 @@
-#!/usr/bin/perl -CSD
+#!/usr/bin/perl
 #
 # Simple command script for executing ParsCit in an
 # offline mode (direct API call instead of going through

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -CSD
+#!/usr/bin/perl
 #
 # Copyright 2007 Penn State University
 # Licensed under the Apache License, Version 2.0 (the "License");
