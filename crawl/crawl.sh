@@ -12,7 +12,4 @@ for repo in $REPOS ; do
     done
 done
 
-for bad in $(cat BAD) ; do
-	rm -vf $bad
-done
-./genFiles.sh
+./genFiles.py
