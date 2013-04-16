@@ -11,3 +11,5 @@ for repo in $REPOS ; do
         wget ${OPTIONS} $url
     done
 done
+
+./genFiles.py

@@ -3,6 +3,12 @@ ifeq ($(HIDE),)
 HIDE:= @
 endif
 
+ifeq ($(shell ls ../perl/bin/perl 2>&1),../perl/bin/perl)
+PERL := ../perl/bin/perl
+else
+PERL := /usr/bin/perl
+endif
+
 default: Files.make files
 
 files:
@@ -17,11 +23,11 @@ Files.make: Makefile genFiles.sh
 
 %.txt : %.pdf
 	@ echo "$< - extracting text"
-	$(HIDE) $(CURDIR)/../cite/FileConversionService/bin/extractText.pl $< > /dev/null
+	$(HIDE) $(PERL) $(CURDIR)/../cite/FileConversionService/bin/extractText.pl $< > /dev/null
 
 %.check : %.txt
 	@ echo "$< - checking"
-	$(HIDE) $(CURDIR)/../cite/DocFilter/bin/filter.pl $< > $@
+	$(HIDE) $(PERL) $(CURDIR)/../cite/DocFilter/bin/filter.pl $< > $@
 
 %.cxml : %.check
 	$(HIDE) if [ "`cat $<`" != "document passed filtration" ] ; then \
@@ -29,7 +35,7 @@ Files.make: Makefile genFiles.sh
 		echo "<notvalid />" > $@ ;\
 	else \
 		echo "`echo "$<" | sed 's/.check/.txt/'` - extracting citations" ;\
-		$(CURDIR)/../cite/ParsCit/bin/citeExtract.pl `echo "$<" | sed 's/.check/.txt/'` | xmllint -format --output $@ - ; \
+		$(PERL) $(CURDIR)/../cite/ParsCit/bin/citeExtract.pl `echo "$<" | sed 's/.check/.txt/'` | xmllint -format --output $@ - ; \
 		rm -f `echo "$<" | sed 's/.check/.body/'` ; \
 		rm -f `echo "$<" | sed 's/.check/.cite/'` ; \
 	fi
@@ -40,7 +46,7 @@ Files.make: Makefile genFiles.sh
 		echo "<notvalid />" > $@ ;\
 	else \
 		echo "`echo "$<" | sed 's/.check/.txt/'` - extracting header" ;\
-		$(CURDIR)/../cite/HeaderParseService/bin/extractHeader.pl `echo "$<" | sed 's/.check/.txt/'` | xmllint -format --output $@ - ; \
+		$(PERL) $(CURDIR)/../cite/HeaderParseService/bin/extractHeader.pl `echo "$<" | sed 's/.check/.txt/'` | xmllint -format --output $@ - ; \
 	fi
 
 clean:
