@@ -1,0 +1,7 @@
+#!/bin/bash
+
+TOP=$(dirname $0)
+TOP=$(cd $TOP && pwd)
+PYENV=${TOP}/../.pyenv
+source ${PYENV}/bin/activate
+exec python pre_index.py $*
