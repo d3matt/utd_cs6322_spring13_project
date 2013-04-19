@@ -2,7 +2,11 @@
 
 import os
 
-bad = open("BAD").readlines()
+bad = []
+for line in open("BAD").readlines():
+    line = line.strip()
+    if line:
+        bad.append(line)
 make = open("Files.make", "w")
 
 def callback(arg, dirname, files):
