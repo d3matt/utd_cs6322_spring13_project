@@ -32,21 +32,17 @@ def parse_cxml(filename):
         attrs = citation.attributes
         if (not attrs.has_key('valid')) or (attrs.get('valid').value != 'true'):
             continue
-
-        citations.append(parse_citation(citation))
+        cite = parse_citation(citation)
+        if cite:
+            citations.append(cite)
     return citations
 
 def parse_citation(node):
     simple_element_list = ["title"]
-    ignore_element_list = [ "date",
-                            "title",
-                            "booktitle",
-                            "pages",
-                            "location",
-                            "marker",
-                            "journal",
-                            "rawString",
-                            "contexts",
+    ignore_element_list = [ "date", "title", "booktitle", "pages", "location",
+                            "marker", "journal", "rawString", "contexts",
+                            "volume", "institution", "tech", "publisher",
+                            "editor", "note",
                             ]
     retval = {}
     for child in node.childNodes:
@@ -68,7 +64,9 @@ def parse_citation(node):
                     raise InvalidXml()
                 retval["authors"].append(achild.data)
         else:
-            print "\t", child.nodeName
+            print "\tunknown field:", child.nodeName
+    if "title" not in retval:
+        return None
     return retval
 
 def parse_hxml(filename):
@@ -135,72 +133,104 @@ def parse_txt(filename):
 
     return (length, retval)
 
-def add_citation(cite):
-    t = cite["title"]
-    c = Citation(title = t)
-    c.save()
-    if "authors" in cite:
-        for author in cite["authors"]:
-            l = Citation_Author.objects.filter(name=author)
-            if len(l) == 0:
-                a = Citation_Author(name=author)
-                a.save()
-            else:
-                a = l[0]
-            c.authors.add(a)
-    c.save()
-    return c
 
-def parse_doc(filename):
-    title, authors = parse_hxml(filename)
-    citations = parse_cxml(filename)
-    length, index = parse_txt(filename)
-    print title, length
-    print authors
-    print json.dumps(citations, indent=2)
-    print index
-
+def add_or_find_paper(title, length=0):
     l = Paper.objects.filter(title=title)
     if len(l) == 0:
         paper = Paper(title=title, length=length)
         paper.save()
     else:
-        print "WARNING: duplicate of '%s' found!" % (title)
-        paper=l[0]
+        paper = l[0]
+        if length and paper.length != length:
+            paper.length = length
+            paper.save()
+    return paper
 
-    for author in authors:
-        l = Paper_Author.objects.filter(name=author)
-        if len(l) == 0:
-            a = Paper_Author(name=author)
-            a.save()
-        else:
-            a = l[0]
-        paper.authors.add(a)
+def add_or_find_author(name):
+    l = Author.objects.filter(name=name)
+    if len(l) == 0:
+        author = Author(name=name)
+        author.save()
+    else:
+        author = l[0]
+    return author
+
+def add_author(paper, name):
+    paper.authors.add(add_or_find_author(name))
+    paper.save()
+
+def add_citations(paper, citations):
     for cite in citations:
         t = cite["title"]
-        l = Citation.objects.filter(title=t)
-        if len(l) == 0:
-            c = add_citation(cite)
-        else:
-            c = l[0]
+        c = add_or_find_paper(t)
+        if "authors" in cite:
+            for author in cite["authors"]:
+                add_author(c, author)
         paper.citations.add(c)
-    paper.save()
-    for stem, num in index.iteritems():
-        l = Token.objects.filter(stem=stem)
-        if len(l) == 0:
-            token = Token(stem=stem, total=num)
-            token.save()
-        else:
-            token = l[0]
-            token.total += num
-            token.save()
-        l = PaperToken.objects.filter(paper=paper, token=token)
-        if len(l) == 0:
-            t = PaperToken(num=num, paper=paper, token=token)
-            t.save()
-        else:
-            t = l[0]
-            t.num=num
-            t.save()
 
-parse_doc("Y12-1005")
+def add_or_find_token_and_add(stem, num):
+    l = Token.objects.filter(stem=stem)
+    if len(l) == 0:
+        token = Token(stem=stem, total=num)
+        token.save()
+    else:
+        token = l[0]
+        token.total += num
+        token.save()
+    return token
+
+def add_token_num(paper, stem, num):
+    token = add_or_find_token_and_add(stem, num)
+    l = PaperToken.objects.filter(paper=paper, token=token)
+    if len(l) == 0:
+        t = PaperToken(num=num, paper=paper, token=token)
+        t.save()
+    else:
+        t = l[0]
+        t.num=num
+        t.save()
+    paper.save()
+
+def parse_doc(filename):
+    """parses the header xml, citation xml, and txt for the given pdf
+assumes everything is valid"""
+    title, authors = parse_hxml(filename)
+    citations = parse_cxml(filename)
+    length, index = parse_txt(filename)
+    print filename, title, length
+
+    paper = add_or_find_paper(title, length)
+    if paper.filename is not None:
+        print "Already fully parsed: " + filename
+        return
+    for author in authors:
+        add_author(paper, author)
+    add_citations(paper, citations)
+
+    for stem, num in index.iteritems():
+        add_token_num(paper, stem, num)
+
+    paper.filename = filename
+    paper.save()
+
+def walk_call(notused, dirname, files):
+    for pdf in files:
+        if '.pdf' not in pdf:
+            continue
+        path = dirname + '/' + pdf.replace('.pdf', '')
+        missing = False
+        for ext in ['.txt', '.cxml', '.hxml', '.check']:
+            if not os.path.exists(path + ext):
+                print path + ext + " missing! SKIPPING!"
+                missing = True
+                break
+        if missing:
+            continue
+        check = open(path + '.check').read().strip()
+        if check != "document passed filtration" :
+            print path + ".txt failed filtration! SKIPPING!"
+            continue
+        print dirname + "/" + pdf
+        parse_doc(path)
+
+os.path.walk("anthology-new", walk_call, None)
