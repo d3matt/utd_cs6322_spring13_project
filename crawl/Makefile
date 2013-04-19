@@ -3,18 +3,14 @@ ifeq ($(HIDE),)
 HIDE:= @
 endif
 
-ifeq ($(shell ls ../perl/bin/perl 2>&1),../perl/bin/perl)
-PERL := ../perl/bin/perl
-else
-PERL := /usr/bin/perl
-endif
+PERL := /usr/bin/perl -CSD
 
-default: Files.make files
+default: files
 
-files:
+files: Files.make
 
-Files.make: Makefile genFiles.sh
-	./genFiles.sh
+Files.make: Makefile genFiles.py
+	./genFiles.py
 
 .PHONY: default
 
@@ -50,8 +46,7 @@ Files.make: Makefile genFiles.sh
 	fi
 
 clean:
-	rm -f Files.make || true
-	find . -name *.check -o -name *.txt -o -name *.cxml -o -name *.hxml -o -name *.cite -o -name *.body | xargs rm -v || true
+	find . -name *.check -o -name *.txt -o -name *.cxml -o -name *.hxml -o -name *.cite -o -name *.body | xargs -n 5 rm -v || true
 
 #without this keywork, GNUmake deletes intermediate files
 .SECONDARY:

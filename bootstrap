@@ -8,7 +8,8 @@ VIRTUAL_ENV_TAR=${_3P}/virtualenv-${VIRTUAL_ENV_VER}.tar.gz
 VIRTUAL_ENV_DIR=${_3P}/virtualenv-${VIRTUAL_ENV_VER}
 
 tar -C ${_3P} -xzf ${VIRTUAL_ENV_TAR}
-python ${VIRTUAL_ENV_DIR}/virtualenv.py ${PYENV}
+[ -z "$PYTHON" ] && PYTHON=python
+$PYTHON ${VIRTUAL_ENV_DIR}/virtualenv.py ${PYENV}
 rm -rf ${VIRTUAL_ENV_DIR}
 
 source ${PYENV}/bin/activate
