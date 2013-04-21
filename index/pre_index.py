@@ -19,8 +19,8 @@ cursor.execute('PRAGMA synchronous=OFF')
 #third party stemmer
 import porter
 def stem(word):
-    return stem.stem(word, 0,len(word)-1)
-stem.stem = porter.PorterStemmer().stem
+    stem = porter.PorterStemmer().stem
+    return stem(word, 0,len(word)-1)
 
 class InvalidXml(Exception):
     pass
@@ -194,13 +194,31 @@ def add_token_num(paper, stem, num):
 def parse_doc(filename):
     """parses the header xml, citation xml, and txt for the given pdf
 assumes everything is valid"""
-    title, authors = parse_hxml(filename)
-    citations = parse_cxml(filename)
-    length, index = parse_txt(filename)
-    print filename, title, length
+
+    l = Paper.objects.filter(filename=filename)
+    if len(l) != 0:
+        print "Already fully parsed: " + filename
+        return
+    try:
+        title, authors = parse_hxml(filename)
+        l = Paper.objects.filter(title=title)
+        if len(l) != 0 and paper.filename is not None and paper.filename != filename:
+            print "WARNING: %s.pdf and %s.pdf have same title: '%s'" % (filename, paper.filename, title)
+            return 
+
+        citations = parse_cxml(filename)
+        length, index = parse_txt(filename)
+        print filename, title, length
+    except:
+        print "WARNING: %s.pdf failed to parse" % (filename)
+        return 
+        
 
     paper = add_or_find_paper(title, length)
     if paper.filename is not None:
+        if paper.filename != filename:
+            print "WARNING: %s.pdf and %s.pdf have same title: '%s'" % (filename, paper.filename, title)
+            return 
         print "Already fully parsed: " + filename
         return
     for author in authors:
@@ -233,4 +251,5 @@ def walk_call(notused, dirname, files):
         print dirname + "/" + pdf
         parse_doc(path)
 
-os.path.walk("anthology-new", walk_call, None)
+if __name__ == "__main__":
+    os.path.walk("anthology-new", walk_call, None)
