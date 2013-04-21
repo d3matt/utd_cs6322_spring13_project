@@ -22,6 +22,13 @@
   {% endfor %}
   </ul>
 
+  <h2>Papers that cite this one</h2>
+  <ul>
+  {% for cite in rcitations %}
+    <li><a href="/paper/{{cite.id}}">{{ cite }}</a></li>
+  {% endfor %}
+  </ul>
+
   <h2>Common Tokens</h2>
   <table>
     <!-- <tr><th>Token</th><th>Occurences</th></tr> -->

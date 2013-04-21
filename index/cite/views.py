@@ -28,6 +28,10 @@ def paper_detail(request):
     paper = Paper.objects.get(id=id_)
     token_list = paper.papertoken_set.all()
     common_tokens = sorted(token_list, key=lambda token: token.num, reverse=True)[0:5]
+
+    rcitations = []
+    for p in Paper.objects.filter(citations__id__exact=paper.id):
+        rcitations.append(p)
     
     uncommon_ = []
     for token in token_list:
@@ -38,6 +42,7 @@ def paper_detail(request):
     return render_to_response('paper_detail.html', {'paper': paper,
                     'common_tokens': common_tokens,
                     'uncommon_tokens': uncommon_tokens,
+                    'rcitations': rcitations
                     })
 
 def token_lookup(request):
