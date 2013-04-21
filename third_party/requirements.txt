@@ -1,3 +1,4 @@
-pdfminer==20110515
 django==1.5.1
 yolk
+pydot
+pyparsing

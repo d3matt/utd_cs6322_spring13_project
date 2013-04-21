@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Paper Details{% endblock %}
+{% block subtitle %} {{ paper }} {% endblock %}
+
+{% block content %}
+
+  Filename: {{paper.filename}} <br/>
+  Length: {{paper.length}} <br/>
+
+  <h2>Authors</h2>
+  <ul>
+  {% for pauthor in paper.authors.all %}
+    <li><a href="/author/{{pauthor.id}}">{{ pauthor }}</a></li>
+  {% endfor %}
+  </ul>
+
+  <h2>Citations</h2>
+  <ul>
+  {% for cite in paper.citations.all %}
+    <li><a href="/paper/{{cite.id}}">{{ cite }}</a></li>
+  {% endfor %}
+  </ul>
+
+  <h2>Common Tokens</h2>
+  <table>
+    <!-- <tr><th>Token</th><th>Occurences</th></tr> -->
+    {% for token in common_tokens %}
+    <tr>
+      <td><a href="/token/{{token.token.id}}">{{token.token}}</a></td>
+      <td>{{token.num}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Uncommon Tokens</h2>
+  <table>
+    {% for token in uncommon_tokens %}
+    <tr>
+      <td><a href="/token/{{token.token.id}}">{{token.token}}</a></td>
+      <td>{{token.num}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+
+{% endblock %}

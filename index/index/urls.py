@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
-from cite.views import hello
+from cite.views import hello, author_list, author_detail, paper_list, paper_detail, token_lookup
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -16,5 +16,11 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
-    ('^$', hello, {'path' : '/'}),
+    ('^$', hello, None),
+    ('^author$', author_list, None),
+    ('^author/\d+$', author_detail, None),
+    ('^paper$', paper_list, None),
+    ('^paper/\d+$', paper_detail, None),
+    ('^token/\d+$', token_lookup, None),
+
 )

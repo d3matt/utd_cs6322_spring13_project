@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Author Details{% endblock %}
+{% block subtitle %} {{ author }} {% endblock %}
+
+{% block content %}
+
+{% for paper in author.paper_set.all %}
+
+  <h2><a href="/paper/{{paper.id}}">{{ paper }}</a></h2>
+  <ul>
+  {% for pauthor in paper.authors.all %}
+    <li><a href="/author/{{pauthor.id}}">{{ pauthor }}</a></li>
+  {% endfor %}
+  </ul>
+
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Papers{% endblock %}
+{% block subtitle %}Papers{% endblock %}
+
+{% block content %}
+
+  <ul>
+{% for paper in paper_list %}
+    <li><a href="/paper/{{paper.id}}">{{ paper }}</a></li>
+{% endfor %}
+  </ul>
+
+
+{% endblock %}

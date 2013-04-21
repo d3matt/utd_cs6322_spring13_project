@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Token Lookup{% endblock %}
+{% block subtitle %}{{token}}{% endblock %}
+
+{% block content %}
+
+  <ul>
+{% for paper in papers %}
+    <li><a href="/paper/{{paper.id}}">{{ paper }}</a></li>
+{% endfor %}
+  </ul>
+
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}ACL Citation Analysis{% endblock %}
+{% block subtitle %}Front Page{% endblock %}
+
+{% block content %}
+  Serving {{len1}} Papers by {{len2}} Authors with {{len3}} Tokens<br/>
+  <ul>
+    <li><a href="/author">Author List</a>
+    <li><a href="/paper">Paper List</a>
+  </ul>
+
+{% endblock %}
