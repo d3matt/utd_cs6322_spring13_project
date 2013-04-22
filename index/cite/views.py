@@ -1,3 +1,7 @@
+import os
+import pydot
+from tempfile import mkstemp
+
 from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
 
@@ -79,3 +83,49 @@ def token_lookup(request):
     for pt in papertokens:
         papers.append(pt.paper)
     return render_to_response('token_lookup.html', {'token': token, 'papers': papers})
+
+class Graph(object):
+    def __init__(self, graph_name, graph_type='digraph', overlap_mode='scalexy'):
+        self.nodes = {}
+        self.graph = pydot.Dot(graph_type=graph_type, graph_name=graph_name)
+        self.graph.set('overlap', overlap_mode)
+
+    def add_node(self, id_, label, color="lightyellow", shape="oval", url=""):
+        #print "Adding Node: '%s' '%s' '%s' '%s'" % (issue, summary, issuetype, status)
+        if id_ in self.nodes:
+            return
+        if url:
+            node = pydot.Node(id_, style="filled", fillcolor=color, label=label, shape=shape, URL=url)
+        else:
+            node = pydot.Node(id_, style="filled", fillcolor=color, label=label, shape=shape)
+        self.graph.add_node(node)
+        self.nodes[id_] = node
+
+    def add_edges(self):
+        pass
+    
+    def render(self):
+        self.add_edges()
+        fd,filename = mkstemp()
+        os.close(fd)
+    
+        response = HttpResponse(content_type='image/svg+xml')
+        self.graph.write_svg(filename, prog="neato")
+
+        fd = open(filename, "rb")
+        binary = fd.read()
+        fd.close()
+        os.remove(filename)
+
+        response.write(binary)
+
+
+#mostly used for AJAX
+def paper_graph(request):
+    id_ = request.get_full_path().split('/')[3]
+    paper = Paper.objects.get(id=id_)
+
+    g = Graph("test")
+    g.add_node(paper.id, paper.title)
+    g.render()
+
