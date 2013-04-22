@@ -118,6 +118,7 @@ class Graph(object):
         os.remove(filename)
 
         response.write(binary)
+        return response
 
 
 #mostly used for AJAX
@@ -127,5 +128,4 @@ def paper_graph(request):
 
     g = Graph("test")
     g.add_node(paper.id, paper.title)
-    g.render()
-
+    return g.render()
