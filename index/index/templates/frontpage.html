@@ -10,4 +10,20 @@
     <li><a href="/paper">Paper List</a>
   </ul>
 
+  <b>Top ten papers by number of citations:</b>
+  <div class='well well-small'>
+  <table class='table'>
+    <tr>
+      <th>Paper</th>
+      <th># of papers citing</th>
+    </tr>
+    {% for paper,num in paper_list %}
+    <tr>
+      <td><a href="/paper/{{paper.id}}">{{paper.title}}</a></td>
+      <td>{{num}}</td>
+    </tr>
+    {% endfor %}
+  </table></div>
+
+
 {% endblock %}

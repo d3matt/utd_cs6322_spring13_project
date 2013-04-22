@@ -2,12 +2,27 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
 
 from cite.models import Author, Paper, Token
+from cite.utils import SortedList
 
 def hello(request):
     len1 = Paper.objects.count()
     len2 = Author.objects.count()
     len3 = Token.objects.count()
-    return render_to_response('frontpage.html', {'len1': len1, 'len2': len2, 'len3': len3})
+
+    sl = SortedList(max_length=10)
+
+    #this would generate the list dynamically...
+    #papers = Paper.objects.all()
+    #for paper in papers:
+    #    sl.insert(paper, paper.citations.count() )
+    for id_ in [ 2485, 7677, 47367, 8097, 1345, 4227, 1017, 65899, 3657, 6024 ]:
+        paper = Paper.objects.get(id=id_)
+        sl.insert(paper, paper.citations.count())
+    return render_to_response('frontpage.html', {'len1': len1,
+                'len2': len2,
+                'len3': len3,
+                'paper_list': sl,
+                })
 
 
 def author_list(request):
