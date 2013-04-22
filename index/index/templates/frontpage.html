@@ -10,6 +10,21 @@
     <li><a href="/paper">Paper List</a>
   </ul>
 
+  <strong>Top ten papers by number of papers citing:</strong>
+  <div class='well well-small'>
+  <table class='table'>
+    <tr>
+      <th>Paper</th>
+      <th>Citing</th>
+    </tr>
+    {% for paper,num in rcite_list %}
+    <tr>
+      <td><a href="/paper/{{paper.id}}">{{paper.title}}</a></td>
+      <td>{{num}}</td>
+    </tr>
+    {% endfor %}
+  </table></div>
+
   <strong>Top ten papers by number of citations:</strong>
   <div class='well well-small'>
   <table class='table'>

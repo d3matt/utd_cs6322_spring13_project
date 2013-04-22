@@ -10,11 +10,21 @@ def hello(request):
     len3 = Token.objects.count()
 
     cite_list = SortedList(max_length=10)
+    rcite_list = SortedList(max_length=10)
 
     #this would generate the list dynamically...
     #papers = Paper.objects.all()
     #for paper in papers:
-    #    sl.insert(paper, paper.citations.count() )
+    #    count = 0
+    #    for p in Paper.objects.filter(citations__id__exact=paper.id):
+    #        count += 1
+    #    rcite_list.insert(paper, count)
+    for id_ in [ 777, 658, 889, 304, 878, 7451, 576, 905, 9594, 2041]:
+        paper = Paper.objects.get(id=id_)
+        count = 0
+        for p in Paper.objects.filter(citations__id__exact=paper.id):
+            count += 1
+        rcite_list.insert(paper, count)
     for id_ in [ 2485, 7677, 47367, 8097, 1345, 4227, 1017, 65899, 3657, 6024 ]:
         paper = Paper.objects.get(id=id_)
         cite_list.insert(paper, paper.citations.count())
@@ -22,6 +32,7 @@ def hello(request):
                 'len2': len2,
                 'len3': len3,
                 'cite_list': cite_list,
+                'rcite_list': rcite_list,
                 })
 
 
