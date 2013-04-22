@@ -9,29 +9,36 @@
   Length: {{paper.length}} <br/>
 
   <h2>Authors</h2>
+  <div class='well well-small'>
   <ul>
   {% for pauthor in paper.authors.all %}
     <li><a href="/author/{{pauthor.id}}">{{ pauthor }}</a></li>
   {% endfor %}
   </ul>
+  </div>
 
   <h2>Citations</h2>
+  <div class='well well-small'>
   <ul>
   {% for cite in paper.citations.all %}
     <li><a href="/paper/{{cite.id}}">{{ cite }}</a></li>
   {% endfor %}
   </ul>
+  </div>
 
   <h2>Papers that cite this one</h2>
+  <div class='well well-small'>
   <ul>
   {% for cite in rcitations %}
     <li><a href="/paper/{{cite.id}}">{{ cite }}</a></li>
   {% endfor %}
   </ul>
+  </div>
 
   <h2>Common Tokens</h2>
-  <table>
-    <!-- <tr><th>Token</th><th>Occurences</th></tr> -->
+  <div class='well well-small'>
+  <table class='table'>
+    <tr><th>Token</th><th>Occurences</th></tr>
     {% for token in common_tokens %}
     <tr>
       <td><a href="/token/{{token.token.id}}">{{token.token}}</a></td>
@@ -39,9 +46,12 @@
     </tr>
     {% endfor %}
   </table>
+  </div>
 
   <h2>Uncommon Tokens</h2>
-  <table>
+  <div class='well well-small'>
+  <table class='table'>
+    <tr><th>Token</th><th>Occurences</th></tr>
     {% for token in uncommon_tokens %}
     <tr>
       <td><a href="/token/{{token.token.id}}">{{token.token}}</a></td>
@@ -49,6 +59,7 @@
     </tr>
     {% endfor %}
   </table>
+  </div>
 
 
 {% endblock %}

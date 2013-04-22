@@ -9,7 +9,7 @@ def hello(request):
     len2 = Author.objects.count()
     len3 = Token.objects.count()
 
-    sl = SortedList(max_length=10)
+    cite_list = SortedList(max_length=10)
 
     #this would generate the list dynamically...
     #papers = Paper.objects.all()
@@ -17,11 +17,11 @@ def hello(request):
     #    sl.insert(paper, paper.citations.count() )
     for id_ in [ 2485, 7677, 47367, 8097, 1345, 4227, 1017, 65899, 3657, 6024 ]:
         paper = Paper.objects.get(id=id_)
-        sl.insert(paper, paper.citations.count())
+        cite_list.insert(paper, paper.citations.count())
     return render_to_response('frontpage.html', {'len1': len1,
                 'len2': len2,
                 'len3': len3,
-                'paper_list': sl,
+                'cite_list': cite_list,
                 })
 
 

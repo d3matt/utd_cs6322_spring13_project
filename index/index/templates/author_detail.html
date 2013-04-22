@@ -5,15 +5,32 @@
 
 {% block content %}
 
-{% for paper in author.paper_set.all %}
+  <h2>Papers</h2>
 
-  <h2><a href="/paper/{{paper.id}}">{{ paper }}</a></h2>
-  <ul>
-  {% for pauthor in paper.authors.all %}
-    <li><a href="/author/{{pauthor.id}}">{{ pauthor }}</a></li>
+
+  <div class="accordion" id="paperaccordion">
+  {% for paper in author.paper_set.all %}
+
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#paperaccordion" href="#collapse{{paper.id}}">{{paper|truncatechars:80}}</a>
+    </div>
+    <div id="collapse{{paper.id}}" class="accordion-body collapse">
+      <div class="accordion-inner">
+        {{paper}}
+        <ul class="nav nav-list">
+          <li><a href="/paper/{{paper.id}}">Paper Details</a></li>
+          <br />Other Authors: 
+          {% for pauthor in paper.authors.all %}
+          <li><a href="/author/{{pauthor.id}}">{{ pauthor }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
   {% endfor %}
-  </ul>
-
-{% endfor %}
+  </div> <!-- accordion -->
 
 {% endblock %}
+

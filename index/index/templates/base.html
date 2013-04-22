@@ -3,46 +3,29 @@
 
 <head>
     <title>{% block title %}{% endblock %}</title>
+    <script src="/static/jquery-1.9.1.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.css">
 </head>
 
 <body>
-    <style type="text/css">
-        ul.errorlist {
-            margin: 0;
-            padding: 0;
-        }
-        .errorlist li {
-            background-color: red;
-            color: white;
-            display: block;
-            font-size: 10px;
-            margin: 0 0 3px;
-            padding: 4px 5px;
-        }
-        th {
-            float:right;
-        }
-    </style>
+  <div class = "container">
+  <div class = "row">
+  <div class = "span12">
 
+  {% block header %}
+  <h1>
+      {% block subtitle %}{% endblock %}
+  </h1>
+  {% endblock %}
 
-    <div class = "container">
-    <div class = "row">
-    <div class = "span12">
+  {% block content %}{% endblock %}
 
-    {% block header %}
-    <h1>
-        {% block subtitle %}{% endblock %}
-    </h1>
-    {% endblock %}
+  {% block footer %}{% endblock %}
 
-    {% block content %}{% endblock %}
-
-    {% block footer %}{% endblock %}
-
-    </div>
-    </div>
-    </div>
+  </div>
+  </div>
+  </div>
 
 </body>
 </html>

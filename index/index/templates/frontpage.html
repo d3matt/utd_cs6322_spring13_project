@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}ACL Citation Analysis{% endblock %}
-{% block subtitle %}Front Page{% endblock %}
+{% block subtitle %}ACL Citation Analysis{% endblock %}
 
 {% block content %}
   Serving {{len1}} Papers by {{len2}} Authors with {{len3}} Tokens<br/>
@@ -10,14 +10,14 @@
     <li><a href="/paper">Paper List</a>
   </ul>
 
-  <b>Top ten papers by number of citations:</b>
+  <strong>Top ten papers by number of citations:</strong>
   <div class='well well-small'>
   <table class='table'>
     <tr>
       <th>Paper</th>
-      <th># of papers citing</th>
+      <th>Citations</th>
     </tr>
-    {% for paper,num in paper_list %}
+    {% for paper,num in cite_list %}
     <tr>
       <td><a href="/paper/{{paper.id}}">{{paper.title}}</a></td>
       <td>{{num}}</td>
