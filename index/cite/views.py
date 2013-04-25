@@ -1,3 +1,4 @@
+import json
 import os
 import pydot
 import xml.dom.minidom
@@ -85,77 +86,30 @@ def token_lookup(request):
         papers.append(pt.paper)
     return render_to_response('token_lookup.html', {'token': token, 'papers': papers})
 
-class Graph(object):
-    def __init__(self, graph_name, graph_type='digraph', overlap_mode='scale'):
-        self.nodes = {}
-        self.edgelist = []
-        self.graph = pydot.Dot(graph_type=graph_type, graph_name=graph_name)
-        self.graph.set('overlap', overlap_mode)
 
-    def add_node(self, id_, label, color="lightyellow", shape="circle", url=""):
-        #print "Adding Node: '%s' '%s' '%s' '%s'" % (issue, summary, issuetype, status)
-        if id_ in self.nodes:
-            return
-        if url:
-            node = pydot.Node(id_, style="filled", fillcolor=color, label=label, shape=shape, URL=url)
-        else:
-            node = pydot.Node(id_, style="filled", fillcolor=color, label=label, shape=shape)
-        self.graph.add_node(node)
-        self.nodes[id_] = node
-
-    def add_edge(self, id1, id2):
-        e = (id1, id2)
-        if e not in self.edgelist:
-            self.edgelist.append(e)
-
-    def add_edges(self):
-        print self.nodes
-        print self.edgelist
-        for id1,id2 in self.edgelist:
-            n1 = self.nodes[id1]
-            n2 = self.nodes[id2]
-            e = pydot.Edge(n1,n2)
-            self.graph.add_edge(e)
-    
-    def render(self):
-        self.add_edges()
-        fd,filename = mkstemp()
-        os.close(fd)
-    
-        response = HttpResponse(content_type='image/svg+xml')
-        self.graph.write_svg(filename, prog="twopi")
-
-        #dom = xml.dom.minidom.parse(filename)
-        #dom.normalize()
-        #script = xml.dom.minidom.parseString("<script />").childNodes[0]
-        #script.setAttribute('xlink:href', '/static/SVGPan.js')
-        #viewport = xml.dom.minidom.parseString("""<g id="viewport" transform="translate(0,0)"></g>""").childNodes[0]
-        #svg = dom.getElementsByTagName("svg")[0]
-        #svg.insertBefore(script, svg.firstChild)
-        #while svg.firstChild:
-        #    node = svg.firstChild
-        #    svg.removeChild(node)
-        #    viewport.appendChild(node)
-        #svg.appendChild(script)
-        #svg.appendChild(viewport)
-        #svg.removeAttribute("height")
-        #svg.removeAttribute("width")
-        #svg.removeAttribute("viewBox")
-        #response.write(dom.toprettyxml(indent="  "))
-        response.write(open(filename).read())
-        os.remove(filename)
-        return response
-
-
-#mostly used for AJAX
-def paper_graph(request):
+def paper_json(request):
     id_ = request.get_full_path().split('/')[3]
     paper = Paper.objects.get(id=id_)
+    response = HttpResponse(content_type='text/json; charset=utf-8')
 
-    g = Graph("test")
-    g.add_node(paper.title, paper.id)
+    retval = {}
+    retval["directed"] = True
+    retval["mulitgraph"] = False
+    retval["graph"] = []
+    retval["nodes"] = []
+    nodes = {}
+    n = 0
+    nodes[paper.id] = n
+    n += 1
+    retval["nodes"].append( { "id" : str(paper.id), "title": paper.title, "size" : 20, "hovered" : True} )
+    retval["links"] = []
     for cite in paper.citations.all():
-        g.add_node(cite.title, cite.id)
-        g.add_edge(paper.title, cite.title)
+        if cite.id not in nodes:
+            nodes[cite.id] = n
+            n += 1
+        retval["nodes"].append( { "id" : str(cite.id), "title": cite.title, "size" : 0, "hovered" : False} )
+        retval["links"].append( { "source" : nodes[paper.id], "target" : nodes[cite.id]} )
 
-    return g.render()
+
+    response.write(json.dumps(retval,indent=2))
+    return response

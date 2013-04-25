@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
-from cite.views import hello, author_list, author_detail, paper_list, paper_detail, paper_graph, token_lookup
+from cite.views import *
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -21,7 +21,7 @@ urlpatterns = patterns('',
     ('^author/\d+$', author_detail, None),
     ('^paper$', paper_list, None),
     ('^paper/\d+$', paper_detail, None),
-    ('^paper/graph/\d+$', paper_graph, None),
+    ('^paper/json/\d+$', paper_json, None),
     ('^token/\d+$', token_lookup, None),
 
 )
