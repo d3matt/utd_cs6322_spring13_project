@@ -1,6 +1,5 @@
 import json
 import os
-import pydot
 import xml.dom.minidom
 from tempfile import mkstemp
 
