@@ -2,6 +2,7 @@
 
 TOP=$(dirname $0)
 TOP=$(cd $TOP && pwd)
+cd $TOP
 PYENV=${TOP}/../.pyenv
 source ${PYENV}/bin/activate
 exec python manage.py $*
