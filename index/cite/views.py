@@ -87,8 +87,33 @@ def token_lookup(request):
     return render_to_response('token_lookup.html', {'token': token, 'papers': papers})
 
 
+def add_node(p, nodes, retval, size=0):
+    """adds a node to the graph"""
+    if p.id not in nodes:
+        nodes[p.id] = len(nodes)
+        retval["nodes"].append({"id": str(p.id), "title": p.title, "size": size})
+
+
+def dfs_paper(p, nodes, edges, retval, max_level=1):
+    """does a depth first search (up to the max depth specified) starting at node p"""
+    for cite in p.citations.all():
+        add_node(cite, nodes, retval)
+        if max_level > 0 :
+            dfs_paper(cite, nodes, edges, retval, max_level-1)
+        if (p.id,cite.id) not in edges:
+            edges.append( (p.id,cite.id) )
+    for rcite in Paper.objects.filter(citations__id__exact=p.id):
+        add_node(rcite, nodes, retval)
+        if max_level > 0 :
+            dfs_paper(rcite, nodes, edges, retval, max_level-1)
+        if (rcite.id, p.id) not in edges:
+            edges.append( (rcite.id, p.id) )
+
+
 def paper_json(request):
     id_ = request.get_full_path().split('/')[3]
+    if '?' in id_:
+        id_ = id_.split('?')[0]
     paper = Paper.objects.get(id=id_)
     response = HttpResponse(content_type='text/json; charset=utf-8')
 
@@ -97,19 +122,28 @@ def paper_json(request):
     retval["mulitgraph"] = False
     retval["graph"] = []
     retval["nodes"] = []
-    nodes = {}
-    n = 0
-    nodes[paper.id] = n
-    n += 1
-    retval["nodes"].append( { "id" : str(paper.id), "title": paper.title, "size" : 20, "hovered" : True} )
     retval["links"] = []
-    for cite in paper.citations.all():
-        if cite.id not in nodes:
-            nodes[cite.id] = n
-            n += 1
-        retval["nodes"].append( { "id" : str(cite.id), "title": cite.title, "size" : 0, "hovered" : False} )
-        retval["links"].append( { "source" : nodes[paper.id], "target" : nodes[cite.id]} )
+    nodes = {}
+    edges = []
 
+    add_node(paper, nodes, retval, 20)
+    dfs_paper(paper, nodes, edges, retval, 1)
+    #convert edges to format expected by D3
+    for f,t in edges:
+        retval["links"].append( { "source" : nodes[f], "target" : nodes[t]} )
 
-    response.write(json.dumps(retval,indent=2))
+    #for legible json for debugging
+    indent = 0
+    try:
+        if "indent" in request.POST:
+            indent=int(request.POST["indent"])
+        if "indent" in request.GET:
+            indent=int(request.GET["indent"])
+    except:
+        pass
+
+    if indent > 0:
+        response.write(json.dumps(retval, indent=indent))
+    else:
+        response.write(json.dumps(retval))
     return response

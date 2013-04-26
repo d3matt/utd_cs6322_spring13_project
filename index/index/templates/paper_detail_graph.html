@@ -27,13 +27,14 @@ The basic gist of this template came from http://graus.nu/d3/
 
 var graph = 'graph.json'
 
-var w = 960, h = 700, r = 10;
+var w = 900, h = 700, r = 10;
 
-var vis = d3.select(".graph")
+var win = d3.select(".graph")
     .append("svg:svg")
     .attr("width", w)
     .attr("height", h)
     .attr("pointer-events", "all")
+var vis = win
     .append('svg:g')
     .call(d3.behavior.zoom().on("zoom", redraw))
     .append('svg:g');
@@ -42,6 +43,13 @@ vis.append('svg:rect')
     .attr('width', w)
     .attr('height', h)
     .attr('fill', 'rgba(1,1,1,0)')
+
+var infofield = win.append('svg:g')
+    .attr('class', 'info')
+    .append('svg:text')
+    .attr('x', 5)
+    .attr('y', h-5 )
+    .text("")
 
 function redraw() {
     console.log("here", d3.event.translate, d3.event.scale);
@@ -55,7 +63,7 @@ function redraw() {
             else {return -200;};
         })
         .linkDistance(function(d){
-            return 60;
+            return 30;
         })
         .size([w, h]);
     
@@ -108,6 +116,7 @@ d3.json("/paper/json/{{id}}", function(json) {
 
     function onMouseOver(d) {
         //bring the node to the front...
+        d3.select("g.info").select("text").text(d.title);
         vis.selectAll("g.node").sort(function(a,b) {
             if(a.id == d.id ) {return 1;}
             return -1;});
@@ -117,10 +126,10 @@ d3.json("/paper/json/{{id}}", function(json) {
             .style("fill", "#BBB");
         d3.select(this).select("text")
             .style("pointer-events", "all")
-            .on("click", function(){window.location = "/paper/" + d.id})
-            .text(function(d){return d.title;});
+            .on("click", function(){window.location = "/paper/" + d.id});
     }
     function onMouseOut(d) {
+        d3.select("g.info").select("text").text("");
         d.hovered = false;
         d3.select(this).select("circle")
             .attr("r", function(d){return d.size;})
@@ -128,8 +137,7 @@ d3.json("/paper/json/{{id}}", function(json) {
         d3.select(this).select("text")
             .attr("xlink:href", null)
             .style("pointer-events", "none")
-            .on("click", null)
-            .text(function(d){return d.id;});
+            .on("click", null);
     }
 
             
