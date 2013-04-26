@@ -1,12 +1,16 @@
 import json
 import os
+import time
 import xml.dom.minidom
+
+from math import log,sqrt
 from tempfile import mkstemp
 
 from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
 
-from cite.models import Author, Paper, Token
+from cite.forms import TopicSearchForm
+from cite.models import Author, Paper, Token, PaperToken
 from cite.utils import SortedList
 
 def hello(request):
@@ -45,13 +49,16 @@ def author_list(request):
     author_list = Author.objects.all()
     return render_to_response('author_list.html', {'author_list': author_list})
 
+
 def paper_list(request):
     paper_list = Paper.objects.all()
     return render_to_response('paper_list.html', {'paper_list': paper_list})
 
+
 def author_detail(request, author_id):
     author = Author.objects.get(id=author_id)
     return render_to_response('author_detail.html', {'author' : author})
+
 
 def paper_detail(request, paper_id):
     paper = Paper.objects.get(id=paper_id)
@@ -73,6 +80,7 @@ def paper_detail(request, paper_id):
                     'uncommon_tokens': uncommon_tokens,
                     'rcitations': rcitations
                     })
+
 
 def token_lookup(request, token_id):
     token = Token.objects.get(id=token_id)
@@ -141,3 +149,90 @@ def paper_json(request, paper_id):
         response.write(json.dumps(retval))
     return response
 
+#third party stemmer
+import porter
+def stem(word):
+    stem = porter.PorterStemmer().stem
+    return stem(word, 0,len(word)-1)
+
+STOP_WORDS = []
+def load_stopwords():
+    f = open( os.path.abspath(os.path.dirname(__file__)) +
+        "/../../cite/HeaderParseService/resources/database/stopwords")
+    for line in f:
+        word = line.strip()
+        if word:
+            STOP_WORDS.append(word)
+load_stopwords()
+
+def log_text(text, request):
+    f = open("queries.log", 'a')
+    f.write(time.strftime("%c") + " from " + request.META["REMOTE_ADDR"] + "\n")
+    f.write(text)
+    f.write("\n\n")
+
+def topic_graph(text, request):
+    log_text(text, request)
+    data = {}
+    data["directed"] = True
+    data["mulitgraph"] = False
+    data["graph"] = []
+    data["nodes"] = []
+    data["links"] = []
+    topics = {}
+    nodes = {}
+    for line in text.splitlines():
+        words = line.split()
+        topic = words[0].lower()
+        d = {}
+        topics[topic] = d
+        d["orig"] = words
+        d["tokens"] = set()
+        d["Tokens"] = [] #actual Token objects (gotta do the DB lookup anyway)
+        d["papers"] = set()
+        nodes[topic] = len(nodes)
+        for word in words:
+            word = word.lower()
+            token = stem(word)
+            if word not in STOP_WORDS and token not in STOP_WORDS:
+                d["tokens"].add(token)
+        for token in d["tokens"]:
+            try:
+                t = Token.objects.get(stem=token)
+            except:
+                continue
+            d["Tokens"].append(t)
+            l = PaperToken.objects.filter(token=t)
+            for pt in l:
+                d["papers"].add(pt.paper_id)
+        size = len(d["papers"])
+        if size:
+            size = log(size, 1.2)
+        data["nodes"].append({"id": topic, "title": topic, "size": size })
+
+    for i in topics:
+        for j in topics:
+            if i is j:
+                continue
+            p1 = topics[i]["papers"]
+            p2 = topics[j]["papers"]
+            if len(p1.intersection(p2)) > 0:
+                src = nodes[i]
+                dst = nodes[j]
+                data["links"].append({"source": src, "target": dst})
+
+    return render_to_response('topic_search_results.html', {'json_data': json.dumps(data), 'topics': topics})
+
+def topic_search(request):
+    if request.POST:
+        form = TopicSearchForm(request.POST)
+        if form.is_valid():
+            return topic_graph(form.cleaned_data["block"], request)
+    else:
+        #provide a nice initial graph
+        initial = {'block': """chinese pizza
+english nouns
+semantics computation
+""", }
+        form = TopicSearchForm(initial = initial)
+    return render_to_response('topic_search_form.html', {'form': form})

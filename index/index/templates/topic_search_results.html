@@ -1,8 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Token Search Results{% endblock %}
+{% block subtitle %}Token Search Results{% endblock %}
+
+{% block content %}
+
+    <h3>Result Graph</h3>
     <div class = "well well-small">
       <div class = "graph">
-<!--
-The basic gist of this template came from http://graus.nu/d3/
--->
+      <!-- very similar to paper_detail_graph except the results are in the page... -->
       <script type="text/javascript" src="/static/d3.v3.min.js"></script>
 
       <style type="text/css">
@@ -21,6 +27,30 @@ The basic gist of this template came from http://graus.nu/d3/
       </style>
       </div>
     </div>
+    <h3>Result Details</h3>
+
+    <div class="accordion" id="topoicaccordion">
+      {% for topic,data in topics.items %}
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#paperaccordion" href="#collapse{{topic}}">{{topic}}</a>
+        </div>
+        <div id="collapse{{topic}}" class="accordion-body collapse">
+          <div class="accordion-inner">
+            <strong>Original Query</strong>
+            <p>{% for word in data.orig %}{{word}} {% endfor %}</p>
+            <strong>Tokens</strong>
+            <ul>
+              {% for token in data.Tokens %}
+              <li><a href="/token/{{token.id}}">{{token.stem}}</a></li>{% endfor %}
+            </ul>
+            <strong>Number of Papers:</strong> {{data.papers | length}}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    </div> <!-- accordion -->
+
     
     <script type="text/javascript">
 
@@ -41,12 +71,7 @@ vis.append('svg:rect')
     .attr('height', h)
     .attr('fill', 'rgba(1,1,1,0)')
 
-var infofield = win.append('svg:g')
-    .attr('class', 'info')
-    .append('svg:text')
-    .attr('x', 5)
-    .attr('y', h-5 )
-    .text("")
+var json_data = jQuery.parseJSON('{{ json_data|safe }}');
 
 function redraw() {
     console.log("here", d3.event.translate, d3.event.scale);
@@ -60,7 +85,7 @@ function redraw() {
             else {return -200;};
         })
         .linkDistance(function(d){
-            return 30;
+            return 100;
         })
         .size([w, h]);
     
@@ -68,9 +93,8 @@ function redraw() {
         .attr("width", w)
         .attr("height", h);
         
-d3.json("/paper/json/{{id}}", function(json) {
         var link = vis.selectAll("line")
-            .data(json.links)
+            .data(json_data.links)
             .enter().append("line")
             .attr("stroke-opacity", function(d) { if(d.label == 'is a') { return '0.8';} else{ return '0.2'; }; })
             .attr("stroke-width","6")
@@ -79,7 +103,7 @@ d3.json("/paper/json/{{id}}", function(json) {
             .on("mouseout", function(){d3.select(this).style("stroke", function(d) { if(d.color !== null) { return d.color;}; }).attr("stroke-opacity", function(d) { if(d.label == 'is a') { return '0.8';} else { return '0.2'; };}) });
 
         var node = vis.selectAll("g.node")
-            .data(json.nodes)
+            .data(json_data.nodes)
             .enter().append("svg:g")
             .attr("class","node")
             .on("mouseover", onMouseOver)
@@ -103,18 +127,16 @@ d3.json("/paper/json/{{id}}", function(json) {
                 .text(function(d) { return d.URI } );
 
         force
-            .nodes(json.nodes)
-            .links(json.links)
+            .nodes(json_data.nodes)
+            .links(json_data.links)
             .on("tick", tick)
             .start();
 
     function onMouseOver(d) {
         //bring the node to the front...
-        d3.select("g.info").select("text").text(d.title);
         vis.selectAll("g.node").sort(function(a,b) {
             if(a.id == d.id ) {return 1;}
             return -1;});
-        d.hovered = true;
         d3.select(this).select("circle")
             .attr("r", function(d){return d.size*2;})
             .style("fill", "#BBB");
@@ -123,8 +145,6 @@ d3.json("/paper/json/{{id}}", function(json) {
             .on("click", function(){window.location = "/paper/" + d.id});
     }
     function onMouseOut(d) {
-        d3.select("g.info").select("text").text("");
-        d.hovered = false;
         d3.select(this).select("circle")
             .attr("r", function(d){return d.size;})
             .style("fill", "#888");
@@ -145,6 +165,7 @@ d3.json("/paper/json/{{id}}", function(json) {
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
   }
-});
 
     </script>
+
+{% endblock %}

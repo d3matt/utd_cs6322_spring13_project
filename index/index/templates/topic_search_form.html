@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Token Search{% endblock %}
+{% block subtitle %}Token Search{% endblock %}
+
+{% block content %}
+    <p>Enter topic search...  The first word of each line is the topic (and
+    label for the graph); this word and every other word on the line is used to
+    search for documents (using boolean OR) to add to the graph.</p>
+
+    <form action="" method="post">
+      <div class="field">
+        {% if form.block.errors %}
+        <div class="alert alert-error">
+          {% for error in form.block.errors %}
+          <strong>WARNING:</strong> {{ error }}
+          {% endfor %}
+        </div>
+        {% endif %}
+        <label for="id_block">Enter Search:</label>
+        {{ form.block }}
+      </div>
+      <input type="submit" value="Submit" class="btn btn-primary">
+    </form>
+
+{% endblock %}

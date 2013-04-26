@@ -23,5 +23,6 @@ urlpatterns = patterns('',
     ('^paper/(?P<paper_id>\d*)$', paper_detail),
     ('^paper/json/(?P<paper_id>\d*)$', paper_json),
     ('^token/(?P<token_id>\d*)$', token_lookup),
+    ('^search$', topic_search),
 
 )
