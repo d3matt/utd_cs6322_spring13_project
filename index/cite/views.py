@@ -49,14 +49,12 @@ def paper_list(request):
     paper_list = Paper.objects.all()
     return render_to_response('paper_list.html', {'paper_list': paper_list})
 
-def author_detail(request):
-    id_ = request.get_full_path().split('/')[2]
-    author = Author.objects.get(id=id_)
+def author_detail(request, author_id):
+    author = Author.objects.get(id=author_id)
     return render_to_response('author_detail.html', {'author' : author})
 
-def paper_detail(request):
-    id_ = request.get_full_path().split('/')[2]
-    paper = Paper.objects.get(id=id_)
+def paper_detail(request, paper_id):
+    paper = Paper.objects.get(id=paper_id)
     token_list = paper.papertoken_set.all()
     common_tokens = sorted(token_list, key=lambda token: token.num, reverse=True)[0:5]
 
@@ -76,9 +74,8 @@ def paper_detail(request):
                     'rcitations': rcitations
                     })
 
-def token_lookup(request):
-    id_ = request.get_full_path().split('/')[2]
-    token = Token.objects.get(id=id_)
+def token_lookup(request, token_id):
+    token = Token.objects.get(id=token_id)
     papers = []
     papertokens = token.papertoken_set.all()
     for pt in papertokens:
@@ -109,11 +106,8 @@ def dfs_paper(p, nodes, edges, retval, max_level=1):
             edges.append( (rcite.id, p.id) )
 
 
-def paper_json(request):
-    id_ = request.get_full_path().split('/')[3]
-    if '?' in id_:
-        id_ = id_.split('?')[0]
-    paper = Paper.objects.get(id=id_)
+def paper_json(request, paper_id):
+    paper = Paper.objects.get(id=paper_id)
     response = HttpResponse(content_type='text/json; charset=utf-8')
 
     retval = {}
@@ -146,3 +140,4 @@ def paper_json(request):
     else:
         response.write(json.dumps(retval))
     return response
+

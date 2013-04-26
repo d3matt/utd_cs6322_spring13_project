@@ -16,12 +16,12 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
-    ('^$', hello, None),
-    ('^author$', author_list, None),
-    ('^author/\d+$', author_detail, None),
+    ('^$', hello),
+    ('^author$', author_list),
+    ('^author/(?P<author_id>\d*)$', author_detail),
     ('^paper$', paper_list, None),
-    ('^paper/\d+$', paper_detail, None),
-    ('^paper/json/\d+$', paper_json, None),
-    ('^token/\d+$', token_lookup, None),
+    ('^paper/(?P<paper_id>\d*)$', paper_detail),
+    ('^paper/json/(?P<paper_id>\d*)$', paper_json),
+    ('^token/(?P<token_id>\d*)$', token_lookup),
 
 )
