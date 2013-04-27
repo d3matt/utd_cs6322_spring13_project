@@ -207,7 +207,7 @@ def topic_graph(text, request):
                 d["papers"].add(pt.paper_id)
         size = len(d["papers"])
         if size:
-            size = log(size, 1.2)
+            size = log(size, 2)
         data["nodes"].append({"id": topic, "title": topic, "size": size })
 
     for i in topics:
@@ -216,10 +216,12 @@ def topic_graph(text, request):
                 continue
             p1 = topics[i]["papers"]
             p2 = topics[j]["papers"]
-            if len(p1.intersection(p2)) > 0:
+            inter = p1.intersection(p2)
+            if len(inter) > 0:
                 src = nodes[i]
                 dst = nodes[j]
-                data["links"].append({"source": src, "target": dst})
+                width = log(len(inter),2)
+                data["links"].append({"source": src, "target": dst, "width": width})
 
     return render_to_response('topic_search_results.html', {'json_data': json.dumps(data), 'topics': topics})
 

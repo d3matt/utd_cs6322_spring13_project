@@ -96,8 +96,8 @@ function redraw() {
         var link = vis.selectAll("line")
             .data(json_data.links)
             .enter().append("line")
-            .attr("stroke-opacity", function(d) { if(d.label == 'is a') { return '0.8';} else{ return '0.2'; }; })
-            .attr("stroke-width","6")
+            .attr("stroke-opacity", '0.2')
+            .attr("stroke-width", function(d){return d.width;})
             .style("stroke", function(d) { if(d.color !== null) { return d.color;}; })
             .on("mouseover", function(){d3.select(this).style("stroke", "#999999").attr("stroke-opacity", "1.0");})
             .on("mouseout", function(){d3.select(this).style("stroke", function(d) { if(d.color !== null) { return d.color;}; }).attr("stroke-opacity", function(d) { if(d.label == 'is a') { return '0.8';} else { return '0.2'; };}) });
