@@ -171,11 +171,12 @@ def add_citations(paper, citations):
 def add_or_find_token_and_add(stem, num):
     l = Token.objects.filter(stem=stem)
     if len(l) == 0:
-        token = Token(stem=stem, total=num)
+        token = Token(stem=stem, total=num, df=1)
         token.save()
     else:
         token = l[0]
         token.total += num
+        token.df += 1
         token.save()
     return token
 

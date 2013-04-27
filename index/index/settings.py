@@ -1,7 +1,7 @@
 # Django settings for index project.
 import os
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -127,6 +127,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
+
+    'django_evolution',
     
     #our apps
     'cite',

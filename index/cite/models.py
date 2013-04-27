@@ -19,6 +19,7 @@ class Token(models.Model):
     stem = models.CharField(max_length=40, unique=True)
     #not sure if we need this field, though it might be useful
     total = models.IntegerField()
+    df = models.IntegerField(default=0)
     def __unicode__(self):
         return self.stem
 
