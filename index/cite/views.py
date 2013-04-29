@@ -232,9 +232,13 @@ def topic_search(request):
             return topic_graph(form.cleaned_data["block"], request)
     else:
         #provide a nice initial graph
-        initial = {'block': """chinese pizza
-english nouns
-semantics computation
+        initial = {'block': """chinese
+english
+japanese
+unconstitutional
+wheelbarrow
+wikipeida
+pizza
 """, }
         form = TopicSearchForm(initial = initial)
     return render_to_response('topic_search_form.html', {'form': form})
