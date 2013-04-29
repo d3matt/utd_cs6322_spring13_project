@@ -116,7 +116,6 @@ def dfs_paper(p, nodes, edges, retval, max_level=1):
 
 def paper_json(request, paper_id):
     paper = Paper.objects.get(id=paper_id)
-    response = HttpResponse(content_type='text/json; charset=utf-8')
 
     retval = {}
     retval["directed"] = True
@@ -143,6 +142,67 @@ def paper_json(request, paper_id):
     except:
         pass
 
+    response = HttpResponse(content_type='text/json; charset=utf-8')
+    if indent > 0:
+        response.write(json.dumps(retval, indent=indent))
+    else:
+        response.write(json.dumps(retval))
+    return response
+
+def add_author_node(a, nodes, retval, size=0):
+    """adds an author node to the graph"""
+    if a.id not in nodes:
+        nodes[a.id] = len(nodes)
+        retval["nodes"].append({"id": str(a.id), "title": a.name, "size": size})
+
+def dfs_author(author, nodes, edges, papers, retval, max_level=1):
+    """finds which authors cite which authors"""
+    for paper in author.paper_set.all():
+        if paper.id in papers:
+            continue
+        papers.append(paper.id)
+        for cite in paper.citations.all():
+            for cite_author in cite.authors.all():
+                add_author_node(cite_author, nodes, retval)
+                edges.append( (author.id, cite_author.id) )
+                if max_level > 0:
+                    dfs_author(cite_author, nodes, edges, papers, retval, max_level-1)
+        for cite in Paper.objects.filter(citations__id__exact=paper.id):
+            for cite_author in cite.authors.all():
+                add_author_node(cite_author, nodes, retval)
+                edges.append( (author.id, cite_author.id) )
+                if max_level > 0:
+                    dfs_author(cite_author, nodes, edges, papers, retval, max_level-1)
+
+def author_json(request, author_id):
+    author = Author.objects.get(id=author_id)
+    retval = {}
+    retval["directed"] = True
+    retval["mulitgraph"] = False
+    retval["graph"] = []
+    retval["nodes"] = []
+    retval["links"] = []
+    nodes = {}
+    edges = []
+    papers = []
+    add_author_node(author, nodes, retval, 20)
+    dfs_author(author, nodes, edges, papers, retval, 0)
+
+    #convert edges to format expected by D3
+    for f,t in edges:
+        retval["links"].append( { "source" : nodes[f], "target" : nodes[t]} )
+
+    #for legible json for debugging
+    indent = 0
+    try:
+        if "indent" in request.POST:
+            indent=int(request.POST["indent"])
+        if "indent" in request.GET:
+            indent=int(request.GET["indent"])
+    except:
+        pass
+
+    response = HttpResponse(content_type='text/json; charset=utf-8')
     if indent > 0:
         response.write(json.dumps(retval, indent=indent))
     else:
